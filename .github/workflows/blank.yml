@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: AmbiorixPay-Android-Project
+
     steps:
       - name: Descargar proyecto
         uses: actions/checkout@v4
@@ -23,23 +27,17 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Configurar Gradle 8.9
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
 
-      - name: Verificar archivos del proyecto
+      - name: Verificar estructura
         run: |
           pwd
           ls -la
-          test -f settings.gradle.kts || {
-            echo "ERROR: Falta settings.gradle.kts en la raíz"
-            exit 1
-          }
-          test -f app/build.gradle.kts || {
-            echo "ERROR: No se encuentra app/build.gradle.kts"
-            exit 1
-          }
+          test -f settings.gradle.kts || test -f settings.gradle
+          test -f app/build.gradle.kts || test -f app/build.gradle
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
@@ -47,9 +45,10 @@ jobs:
       - name: Compilar APK
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Guardar APK para descargar
+      - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: AmbiorixPay-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: AmbiorixPay-Android-Project/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
